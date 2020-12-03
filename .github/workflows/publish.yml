@@ -9,6 +9,20 @@ jobs:
     steps:
       - name: Check out the repo
         uses: actions/checkout@v2
+      - name: Get the version
+          run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
+      - name: Build the tagged Docker image
+          run: docker build . --file Dockerfile --tag verify/rubybase:${{steps.outputs.tag}}
+      - name: Push to GitHub Packages
+        uses: docker/build-push-action@v1
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          registry: docker.pkg.github.com
+          repository: alphagov/verify/rubybase
+          tag_with_ref: true
+      - name: Build the tagged Docker image
+          run: docker build . --file Dockerfile --tag verify/rubybase:latest
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1
         with:
